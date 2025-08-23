@@ -920,15 +920,19 @@ Vector3 ParseSizeString(string sizeStr)
                     btn.onClick.AddListener(() => { Debug.Log("尺寸按鈕被點擊"); ShowMeasurementBox(model);; });
                 }
             }
-            if (CustomizeButtonPrefab != null)
+            if (spawnedModelInfo.TryGetValue(model, out ProductData pd) && pd.from == false)
             {
-                GameObject CustomizeButton = Instantiate(CustomizeButtonPrefab, currentEditButtonPanel.transform);
-                Button btn = CustomizeButton.GetComponent<Button>();
-                if (btn != null)
+                if (CustomizeButtonPrefab != null)
                 {
-                    btn.onClick.AddListener(() => { Debug.Log($"自訂化按鈕被點擊 {model.name}"); StartCustomize(model); });
+                    GameObject CustomizeButton = Instantiate(CustomizeButtonPrefab, currentEditButtonPanel.transform);
+                    Button btn = CustomizeButton.GetComponent<Button>();
+                    if (btn != null)
+                    {
+                        btn.onClick.AddListener(() => { Debug.Log($"自訂化按鈕被點擊 {model.name}"); StartCustomize(model); });
+                    }
                 }
             }
+            
             if (exitEditModeButtonPrefab != null)
             {
                 GameObject exitButton = Instantiate(exitEditModeButtonPrefab, currentEditButtonPanel.transform);

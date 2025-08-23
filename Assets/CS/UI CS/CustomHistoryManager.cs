@@ -204,7 +204,7 @@ public class CustomHistoryManager : MonoBehaviour
                     modelURL = newModelUrl,
                     productName = $"{originalProduct.name} (Custom)",
                     productId = historyData.id, // 可保留原始 ID
-                    // 其他資訊可自行決定是否填充
+                    from = true
                 };
 
                 // 呼叫 ModelLoader1 的方法

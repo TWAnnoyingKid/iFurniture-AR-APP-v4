@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Unity_AR_Furniture_APP_v4.sln"
+    "dotnet.defaultSolution": "iFurniture-AR-APP-v4.sln"
 }
