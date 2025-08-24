@@ -14,10 +14,14 @@ public class ModelConverter : MonoBehaviour
     public Button customizeSendButton;    // 送出請求的按鈕
     public Button customizeCancelButton;   // 取消請求的按鈕
     public Button customizeHistoryButton;  // 顯示歷史紀錄的按鈕
+    public GameObject customizeSendPanel;
+    public Text customizeSendTextTitle;
+    public Text customizeSendText;
+    public float feedbackPanelFadeDuration = 1.0f;
 
     [Header("API 設置")]
     private const string ApiBaseUrl = "http://140.127.114.38:5008/php/3d_convert.php";
-    
+
     // 用來儲存當前要客製化的模型 ID
     private string currentModelId;
 
@@ -55,6 +59,7 @@ public class ModelConverter : MonoBehaviour
 
         // 根據是否有歷史紀錄來決定是否顯示歷史按鈕
         UpdateHistoryButtonVisibility();
+        customizeSendPanel.SetActive(false);
 
         if (customizeSendButton != null)
         {
@@ -118,6 +123,10 @@ public class ModelConverter : MonoBehaviour
         if (string.IsNullOrEmpty(part) || string.IsNullOrEmpty(prompt))
         {
             Debug.LogWarning("部位 (part) 或 提示 (prompt) 為空，請輸入內容。");
+            customizeSendTextTitle.text = "警告";
+            customizeSendText.text = "部位 或 提示 都要輸入";
+            customizeSendPanel.SetActive(true);
+            StartCoroutine(FadeOutPanelCoroutine(customizeSendPanel, 2.0f));
             return;
         }
 
@@ -169,6 +178,10 @@ public class ModelConverter : MonoBehaviour
                         SaveHistory();
 
                         Debug.Log($"成功紀錄 ConvertID: {response.convertID}");
+                        customizeSendTextTitle.text = "開始轉換";
+                        customizeSendText.text = "在 \"客製紀錄\" 可查看進度";
+                        customizeSendPanel.SetActive(true);
+                        StartCoroutine(FadeOutPanelCoroutine(customizeSendPanel, 2.0f));
 
                         // 紀錄成功 清空所有input並關閉面板
                         OnCustomizeCancel();
@@ -201,7 +214,7 @@ public class ModelConverter : MonoBehaviour
             conversionHistory = JsonConvert.DeserializeObject<Dictionary<string, ConversionData>>(jsonHistory);
             Debug.Log($"已成功從 PlayerPrefs 載入 {conversionHistory.Count} 筆歷史紀錄。");
         }
-        
+
         // 如果沒有紀錄或載入失敗，則初始化一個新的空字典
         if (conversionHistory == null)
         {
@@ -219,7 +232,7 @@ public class ModelConverter : MonoBehaviour
         PlayerPrefs.Save(); // 強制寫入磁碟，確保資料不會遺失
 
         Debug.Log("歷史紀錄已儲存到 PlayerPrefs。");
-        
+
         // 每次儲存後都更新一次按鈕的可見性
         UpdateHistoryButtonVisibility();
     }
@@ -233,5 +246,33 @@ public class ModelConverter : MonoBehaviour
             bool hasHistory = conversionHistory != null && conversionHistory.Count > 0;
             customizeHistoryButton.gameObject.SetActive(hasHistory);
         }
+    }
+    private IEnumerator FadeOutPanelCoroutine(GameObject panel, float delay)
+    {
+        // 1. 等待指定的延遲時間
+        yield return new WaitForSeconds(delay);
+
+        // 2. 獲取 CanvasGroup 元件，如果沒有就自動添加一個
+        CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = panel.AddComponent<CanvasGroup>();
+        }
+
+        // 3. 在指定的持續時間內，逐漸將 Alpha 值從 1 降到 0
+        float timer = 0;
+        while (timer < feedbackPanelFadeDuration)
+        {
+            // 更新計時器
+            timer += Time.deltaTime;
+            // 線性插值計算目前的 Alpha 值
+            canvasGroup.alpha = Mathf.Lerp(1f, 0f, timer / feedbackPanelFadeDuration);
+            // 等待下一幀
+            yield return null;
+        }
+
+        // 4. 動畫結束後，完全隱藏該物件並將 Alpha 重設為 1，以備下次使用
+        panel.SetActive(false);
+        canvasGroup.alpha = 1f;
     }
 }
